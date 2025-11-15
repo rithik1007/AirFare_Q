@@ -1,2 +1,69 @@
 # AirFare_Q
 Travel Planning Agent with an MCP server that can compare fares AND allow booking
+below is the architecture diagram
+                            ┌──────────────────────────────┐
+                            │        User (Traveler)        │
+                            │  - Trip query                 │
+                            │  - Budget                     │
+                            │  - Dates / Destination        │
+                            └──────────────┬───────────────┘
+                                           │
+                                           ▼
+                           ┌──────────────────────────────────┐
+                           │      Orchestration Agent         │
+                           │ (Planner + Controller + Memory)  │
+                           │----------------------------------│
+                           │ - Understands intent             │
+                           │ - Breaks task into steps         │
+                           │ - Calls MCP Tools                │
+                           │ - Maintains user profile memory  │
+                           │ - Final itinerary assembly       │
+                           └───────┬────────┬────────┬───────┘
+                                   │        │        │
+         ┌─────────────────────────┘        │        └──────────────────────────┐
+         ▼                                  ▼                                   ▼
+┌──────────────────┐             ┌──────────────────┐               ┌────────────────────┐
+│ Flight Search     │             │ Hotel Search     │               │ Budget Optimizer    │
+│ Agent             │             │ Agent            │               │ Agent               │
+│------------------│             │------------------│               │----------------------│
+│ - Query airfare   │             │ - Query hotels   │               │ - Adjust plan       │
+│ - Filter/Sort     │             │ - Filter by      │               │ - Suggest cheaper   │
+│ - Suggest best    │             │   price/rating   │               │   alternatives       │
+└─────────┬────────┘             └─────────┬────────┘               └──────────┬──────────┘
+          │                                  │                                  │
+          ▼                                  ▼                                  ▼
+ ┌─────────────────┐               ┌─────────────────┐                ┌────────────────────┐
+ │ MCP Server       │               │ MCP Server       │                │ MCP Server         │
+ │ Flight Tool      │               │ Hotel Tool       │                │ Optimization Tool  │
+ │───────────────── │               │──────────────────│                │────────────────────│
+ │ searchFlights()  │               │ searchHotels()   │                │ comparePrices()    │
+ │ compareFares()   │               │ hotelDetails()   │                │ priceAlerts()      │
+ └──────┬───────────┘               └─────────┬────────┘                └─────────┬─────────┘
+        │                                     │                                 │
+        └────────────────────┬────────────────┴──────────────────────────────────┘
+                             ▼
+                     ┌───────────────────────┐
+                     │      Booking Agent    │
+                     │------------------------│
+                     │ - Ask confirmation     │
+                     │ - Trigger booking API  │
+                     │ - Generate ticket      │
+                     └──────────┬────────────┘
+                                ▼
+                     ┌───────────────────────┐
+                     │    MCP Booking Tool    │
+                     │------------------------│
+                     │ bookFlight()           │
+                     │ bookHotel()            │
+                     │ sendE-Ticket()         │
+                     └──────────┬────────────┘
+                                ▼
+                    ┌──────────────────────────┐
+                    │  External Travel APIs     │
+                    │---------------------------│
+                    │ - Amadeus / Skyscanner    │
+                    │ - Booking.com / Expedia   │
+                    │ - Weather API             │
+                    │ - Maps / Places API       │
+                    └───────────────────────────┘
+
